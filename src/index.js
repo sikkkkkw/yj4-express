@@ -3,18 +3,18 @@ import "./db";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import appleRouter from "./routers/appleRouter";
-import noticeRouter from "./routers/noticeRouter";
+import appleRouter from "./models/routers/appleRouter";
+import noticeRouter from "./models/routers/noticeRouter";
 
-const corsOptions = {
-  origin: "*",
-};
+// const corsOptions = {
+//   origin: "*",
+// };
 const PORT = process.env.PORT;
 const app = express();
 //json 형식으로 주고 받겠다.
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(cors(corsOptions));
+app.use(cors());
 
 // notice/list -> 리스트페이지
 // notice/write -> 글쓰기페이지

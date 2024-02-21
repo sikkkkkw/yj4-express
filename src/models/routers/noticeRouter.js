@@ -5,7 +5,7 @@ import {
   noticeList,
   noticeWrite,
   noticeedit,
-} from "../controllers/noticeController";
+} from "../../controllers/noticeController";
 
 const noticeRouter = express.Router();
 
