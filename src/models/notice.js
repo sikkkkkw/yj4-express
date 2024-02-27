@@ -6,5 +6,6 @@ const noticeSchema = new mongoose.Schema({
   createdAt: Date,
   writer: String,
 });
+
 const Notice = mongoose.model("Notice", noticeSchema);
 export default Notice;
