@@ -11,6 +11,7 @@ const corsOptions = {
     "http://localhost:5172",
     "http://localhost:5173",
     "http://localhost:3000",
+    "https://singular-stroopwafel-98f70c.netlify.app/",
   ],
 };
 const PORT = process.env.PORT;
@@ -18,6 +19,7 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan("dev"));
+//corsOptions 지우면 모드 허용
 app.use(cors(corsOptions));
 
 app.get("/", (req, res) => res.send({ name: "kenJo" }));
