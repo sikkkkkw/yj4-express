@@ -11,7 +11,7 @@ const corsOptions = {
     "http://localhost:5172",
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://singular-stroopwafel-98f70c.netlify.app/",
+    "https://singular-stroopwafel-98f70c.netlify.app",
   ],
 };
 const PORT = process.env.PORT;
