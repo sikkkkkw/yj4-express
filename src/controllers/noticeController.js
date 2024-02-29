@@ -36,5 +36,20 @@ export const noticeDetail = async (req, res) => {
     console.log(error);
   }
 };
-export const noticeEdit = (req, res) => res.send({ name: "edit" });
+export const noticeEdit = async (req, res) => {
+  const {
+    body: { title, description, writer },
+    params: { id },
+  } = req;
+  try {
+    const data = await Notice.findByIdAndUpdate(id, {
+      title,
+      description,
+      writer,
+    });
+    res.send({ result: true, data });
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const noticeDelete = (req, res) => res.send({ name: "delete" });
