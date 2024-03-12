@@ -74,9 +74,9 @@ export const noticeDelete = async (req, res) => {
       params: { id },
     } = req;
     await Notice.findByIdAndDelete(id);
-    res.send({ result: trun });
+    res.send({ result: true });
   } catch (error) {
     console.log(error);
-    res.send({ result: false, error: error });
+    res.send({ result: false, error });
   }
 };
