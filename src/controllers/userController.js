@@ -7,8 +7,10 @@ export const memberRegister = async (req, res) => {
     const {
       body: { username, email, password },
     } = req;
+
     // 아이디 중복처리
     const exist = await User.exists({ $or: [{ username }, { email }] });
+    console.log(exist);
     if (exist) {
       return res.send({
         result: false,
@@ -18,7 +20,7 @@ export const memberRegister = async (req, res) => {
 
     // 패스워드 암호화
     const hashedPassword = bcrypt.hashSync(password, 5);
-    console.log(hashedPassword);
+    console.log("password: ", hashedPassword);
 
     const data = User.create({
       username: username,
@@ -26,7 +28,8 @@ export const memberRegister = async (req, res) => {
       password: hashedPassword,
       createdAt: new Date(),
     });
-    res.send({ result: true, data: data });
+
+    res.send({ result: true, data });
   } catch (error) {
     console.log(error);
   }
@@ -34,28 +37,55 @@ export const memberRegister = async (req, res) => {
 
 // 로그인
 export const memberLogin = async (req, res) => {
-  //데이터 가져오기
+  // 데이터 가져오기
   const {
     body: { username, password },
   } = req;
 
-  //아이디 중복체크
-  const user = await User.findOne({ username });
+  // 아이디 중복체크
+  const user = await User.findOne({ username: username });
   if (!user) {
-    return res.send({
-      result: false,
-      message: "해당하는 유저 아이디가 없습니다.",
-    });
+    return res.send({ result: false, message: "해당하는 유저가 없습니다" });
   }
-  //bcrypt를 사용자가 입력한 패스워드와 DB에 있는 패스워드 확인
+  // bcrypt를 사용자가 입력한 패스워드와 DB에 있는 패스워드 확인
   const ok = bcrypt.compareSync(password, user.password);
-  console.log(ok);
   if (!ok) {
     return res.send({ result: false, message: "패스워드가 다릅니다." });
   }
-  //패스워드가 맞으면 로그인
+  // 패스워드가 맞으면 로그인\
   if (ok) {
-    //session 로그인
+    // session 로그인
+    req.session.save(() => {
+      req.session.user = {
+        username: user.username,
+        email: user.email,
+      };
+      const data = req.session;
+      console.log(data);
+      res.send({ result: true, data: data });
+    });
+  }
+};
+//로그인 성공
+export const loginSuccess = async (req, res) => {
+  try {
+    if (req.session.user) {
+      res.send({ result: true, user: req.session.user, isLogin: true });
+    } else {
+      res.send({ result: true, isLogin: false });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+// 로그아웃
+export const logout = async (req, res) => {
+  try {
+    req.session.destroy(() => {
+      res.send({ result: true, message: "로그아웃 성공" });
+    });
+  } catch (error) {
+    console.log(error);
   }
 };
 
