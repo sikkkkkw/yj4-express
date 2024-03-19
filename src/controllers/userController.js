@@ -10,6 +10,7 @@ export const memberRegister = async (req, res) => {
 
     // 아이디 중복처리
     const exist = await User.exists({ $or: [{ username }, { email }] });
+
     console.log(exist);
     if (exist) {
       return res.send({
@@ -66,8 +67,10 @@ export const memberLogin = async (req, res) => {
     });
   }
 };
-//로그인 성공
+
+// 로그인 성공
 export const loginSuccess = async (req, res) => {
+  console.log("loginSuceess", req.session);
   try {
     if (req.session.user) {
       res.send({ result: true, user: req.session.user, isLogin: true });
@@ -78,6 +81,7 @@ export const loginSuccess = async (req, res) => {
     console.log(error);
   }
 };
+
 // 로그아웃
 export const logout = async (req, res) => {
   try {
@@ -89,7 +93,69 @@ export const logout = async (req, res) => {
   }
 };
 
-//findOne -> 데이터를 다 불러옴
-//exists -> 데이터 있는것만 불러옴
-//hashSync -> 암호화
-//compareSync -> 암호화된 비번 비교
+// 소셜카카오 로그인
+export const kakaoLogin = async (req, res) => {
+  // step 1. 인가코드 받기
+  const {
+    query: { code },
+  } = req;
+
+  // step 2. 토큰 받기
+  const KAKAO_BASE_PATH = "https://kauth.kakao.com/oauth/token";
+  const config = {
+    grant_type: "authorization_code",
+    client_id: process.env.CLIENT_ID,
+    redirect_uri: process.env.REDIRECT_URI,
+    code,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${KAKAO_BASE_PATH}?${params}`;
+  const data = await fetch(finalUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+  const tokenRequest = await data.json();
+
+  // step 3. 사용자 정보 받기
+  const { access_token } = tokenRequest;
+  if (access_token) {
+    const userRequest = await fetch("https://kapi.kakao.com/v2/user/me", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    const userData = await userRequest.json();
+    const {
+      properties: { nickname, profile_image },
+      kakao_account: { email },
+    } = userData;
+
+    // 사용자 정보 중에 아이디 값이 DB에 있으면
+    const user = await User.findOne({ email: email });
+    if (user) {
+      // 로그인
+      req.session.save(() => {
+        req.session.user = {
+          username: user.username,
+          email: user.email,
+          profileImage: user.profileImage,
+        };
+        const data = req.session;
+        console.log(data);
+        res.send({ result: true, data: data });
+      });
+    } else {
+      // 회원가입
+      const userData = await User.create({
+        username: nickname,
+        email,
+        profileImage: profile_image,
+        createdAt: Date.now(),
+      });
+      res.send({ result: true, data: userData, message: "회워가입완료" });
+    }
+    // 이메일 값이 DB에 없으면
+  }
+};
